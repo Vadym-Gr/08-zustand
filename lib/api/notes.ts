@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Note } from '@/types/note';
+import { Note, CreateNoteDto } from '@/types/note';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -44,4 +44,14 @@ export const createNote = async (note: Omit<Note, 'id'>): Promise<Note> => {
 
 export const deleteNote = async (id: string): Promise<void> => {
   await api.delete(`/notes/${id}`);
+};
+
+export const getNotes = async () => {
+  const { data } = await api.get<Note[]>('/notes');
+  return data;
+};
+
+export const getNoteById = async (id: string) => {
+  const { data } = await api.get<Note>(`/notes/${id}`);
+  return data;
 };

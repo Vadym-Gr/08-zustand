@@ -1,34 +1,39 @@
-/*import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from '@tanstack/react-query';
+import { Metadata } from "next";
+import { getNoteById } from "@/lib/api/notes";
+import css from "./NoteDetails.module.css";
 
-import { fetchNoteById } from '../../../lib/api';
-import NoteDetailsClient from './NoteDetails.client';
+interface Props {
+  params: { id: string };
+}
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const note = await getNoteById(params.id);
 
-  const queryClient = new QueryClient();
+  return {
+    title: `${note.title} | NoteHub`,
+    description: note.content.substring(0, 150),
+    openGraph: {
+      title: note.title,
+      description: note.content.substring(0, 150),
+      url: `https://notehub.com/notes/${params.id}`,
+      images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
+    },
+  };
+}
 
-  await queryClient.prefetchQuery({
-    queryKey: ['note', id],
-    queryFn: () => fetchNoteById(id),
-  });
+export default async function NoteDetails({ params }: Props) {
+  const note = await getNoteById(params.id);
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <NoteDetailsClient />
-    </HydrationBoundary>
+    <main className={css.main}>
+      <h1>{note.title}</h1>
+      <span className={css.tag}>{note.tag}</span>
+      <p>{note.content}</p>
+    </main>
   );
-}*/
+}
 
-import { fetchNoteById } from '../../../lib/api';
+/*import { fetchNoteById } from '../../../lib/api';
 
 export default async function Page({
   params,
@@ -44,4 +49,4 @@ export default async function Page({
       <p>{note.content}</p>
     </div>
   );
-}
+}*/
