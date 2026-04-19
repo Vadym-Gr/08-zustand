@@ -23,8 +23,6 @@ export const metadata: Metadata = {
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-        width: 1200,
-        height: 630,
       },
     ],
   },
@@ -39,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${roboto.className} ${roboto.variable}`}>
         <TanStackProvider>
           <Header />
           {children}

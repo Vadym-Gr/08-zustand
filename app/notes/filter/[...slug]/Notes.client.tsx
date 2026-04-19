@@ -1,4 +1,72 @@
-'use client';
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api/notes";
+import NoteList from "@/components/NoteList/NoteList";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import Pagination from "@/components/Pagination/Pagination";
+import css from "./Notes.module.css";
+
+
+
+interface NotesClientProps {
+  tag: string;
+}
+
+export default function NotesClient({ tag }: NotesClientProps) {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    // Скидаємо сторінку одразу при зміні пошуку
+    setPage(1);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["notes", tag, page, debouncedSearch],
+    queryFn: () =>
+      fetchNotes({
+        page,
+        search: debouncedSearch,
+        tag: tag === "all" ? undefined : tag,
+      }),
+  });
+
+  return (
+    <div className={css.container}>
+      <div className={css.header}>
+        <SearchBox onSearch={setSearch} />
+        <Link href="/notes/action/create" className={css.createBtn}>
+          Create note +
+        </Link>
+      </div>
+
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <NoteList notes={data?.notes || []} />
+          <Pagination
+            currentPage={page}
+            pageCount={data?.totalPages ?? 1} // ✅ FIX
+            totalPages={data?.totalPages ?? 1}
+            onPageChange={setPage}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+
+/*'use client';
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';

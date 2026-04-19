@@ -4,16 +4,20 @@ import css from "./CreateNote.module.css";
 
 export const metadata: Metadata = {
   title: "Create New Note | NoteHub",
-  description: "Draft and create a new note for your collection.",
+  description: "Create a new note and organize your life.",
   openGraph: {
     title: "Create New Note | NoteHub",
-    description: "Draft and create a new note for your collection.",
+    description: "Create a new note and organize your life.",
     url: "https://notehub.com/notes/action/create",
-    images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
+    images: [
+      {
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+      },
+    ],
   },
 };
 
-export default function CreateNote() {
+export default function CreateNotePage() {
   return (
     <main className={css.main}>
       <div className={css.container}>

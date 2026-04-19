@@ -1,4 +1,73 @@
-import css from './NoteForm.module.css';
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNote } from "@/lib/api/notes";
+import { useNoteStore } from "@/lib/store/noteStore";
+import css from "./NoteForm.module.css";
+
+export default function NoteForm() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { draft, setDraft, clearDraft } = useNoteStore();
+
+  const mutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      clearDraft();
+      router.back();
+    },
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    // Оскільки тепер setDraft оновлює весь об'єкт, передаємо новий стан
+    setDraft({ ...draft, [name]: value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate({ ...draft, createdAt: new Date().toISOString() });
+  };
+
+  return (
+    <form className={css.form} onSubmit={handleSubmit}>
+      <input
+        name="title"
+        value={draft.title}
+        onChange={handleChange}
+        placeholder="Title"
+        required
+      />
+      <select name="tag" value={draft.tag} onChange={handleChange}>
+        <option value="Todo">Todo</option>
+        <option value="Work">Work</option>
+        <option value="Personal">Personal</option>
+        <option value="Meeting">Meeting</option>
+        <option value="Shopping">Shopping</option>
+      </select>
+      <textarea
+        name="content"
+        value={draft.content}
+        onChange={handleChange}
+        placeholder="Content"
+        required
+      />
+      <div className={css.buttons}>
+        <button type="button" onClick={() => router.back()}>Cancel</button>
+        <button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending ? "Creating..." : "Create"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+
+/*import css from './NoteForm.module.css';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote } from '../../lib/api';
 import type { NoteTag } from '../../types/note';
@@ -15,8 +84,6 @@ interface FormValues {
   content: string;
   tag: NoteTag;
 }
-
-/*interface FormEvent<T = Element>*/
 
 export default function NoteForm() {
   const router = useRouter();
@@ -85,4 +152,4 @@ export default function NoteForm() {
       </div>
     </form>
   );
-}
+}*/
