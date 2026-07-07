@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api/notes";
+import { getNotesByFilter } from "@/lib/api/notes";
 import NoteList from "@/components/NoteList/NoteList";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import css from "./Notes.module.css";
-
-
 
 interface NotesClientProps {
   tag: string;
@@ -20,29 +18,31 @@ export default function NotesClient({ tag }: NotesClientProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // Debounce пошуку
   useEffect(() => {
-    // Скидаємо сторінку одразу при зміні пошуку
-    setPage(1);
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
     }, 500);
     return () => clearTimeout(handler);
   }, [search]);
 
+  // Скидання сторінки при зміні пошукового запиту
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(1);
+  };
+
   const { data, isLoading } = useQuery({
     queryKey: ["notes", tag, page, debouncedSearch],
-    queryFn: () =>
-      fetchNotes({
-        page,
-        search: debouncedSearch,
-        tag: tag === "all" ? undefined : tag,
-      }),
+    queryFn: () => getNotesByFilter(tag, page, debouncedSearch),
   });
 
   return (
     <div className={css.container}>
       <div className={css.header}>
-        <SearchBox onSearch={setSearch} />
+        {/* ВИПРАВЛЕНО: SearchBox зазвичай очікує onChange. Переконайся, що в SearchBox.tsx пропси описані як { onChange: (val: string) => void } */}
+        <SearchBox onChange={handleSearchChange} />
+        
         <Link href="/notes/action/create" className={css.createBtn}>
           Create note +
         </Link>
@@ -53,12 +53,13 @@ export default function NotesClient({ tag }: NotesClientProps) {
       ) : (
         <>
           <NoteList notes={data?.notes || []} />
+          {/* ВИПРАВЛЕНО: Передаємо pageCount (totalPages) та currentPage (page) відповідно до твого інтерфейсу PaginationProps */}
           <Pagination
-            currentPage={page}
-            pageCount={data?.totalPages ?? 1} // ✅ FIX
-            totalPages={data?.totalPages ?? 1}
-            onPageChange={setPage}
-          />
+        currentPage={page}
+        pageCount={data?.totalPages ?? 1} // ✅ FIX
+        totalPages={data?.totalPages ?? 1}
+        onPageChange={setPage}
+      />
         </>
       )}
     </div>

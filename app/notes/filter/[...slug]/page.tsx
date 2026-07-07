@@ -1,6 +1,31 @@
+import { Metadata } from "next";
+import { getNotes } from "@/lib/api/notes"; // Виправлено назву
+import NotesClient from "./Notes.client";
+
+interface Props {
+  params: Promise<{ slug: string[] }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const tag = slug[0];
+  return {
+    title: `Notes: ${tag} | NoteHub`,
+    description: `Browse all notes with tag ${tag}`,
+  };
+}
+
+export default async function FilteredNotesPage({ params }: Props) {
+  const { slug } = await params;
+  const tag = slug[0];
+
+  return <NotesClient tag={tag} />;
+}
+
+/*import { Metadata } from "next";
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import NotesClient from './Notes.client';
-import { fetchNotes } from '@/lib/api/notes';
+import { getNotes } from '@/lib/api/notes';
 
 import { Metadata } from "next";
 
@@ -33,7 +58,7 @@ export default async function FilteredNotesPage({ params }: Props) {
   const tag = slug[0];
 
   return <NotesClient tag={tag} />;
-}
+}*/
 
 /*export default async function Page({
   params,
